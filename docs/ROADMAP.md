@@ -8,7 +8,7 @@ Unchecked items are not implemented. Repository preparation does not imply a wor
 - [x] English and Italian root READMEs and explicit AI disclosure.
 - [x] Architecture, coding standards, contribution and security guidance.
 - [x] Pinned formatter, CI definitions, Dependabot configuration and ruleset definitions.
-- [ ] Confirm effective GitHub branch/security settings after bootstrap checks pass.
+- [x] Confirm effective GitHub branch/security settings after bootstrap checks pass.
 
 ## Windows application
 
