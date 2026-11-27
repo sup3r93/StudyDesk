@@ -1,0 +1,11 @@
+# Keep upstream detectors and add assigned StudyDesk token detection.
+title = "StudyDesk secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "studydesk-assigned-token"
+description = "Assigned 64-character StudyDesk client/server token"
+regex = '''(?i)(?:studydesk[_ -]?)?(?:client|server|access|sync)[_ -]?token\s*[:=]\s*["']([0-9a-f]{64})["']'''
+secretGroup = 1
