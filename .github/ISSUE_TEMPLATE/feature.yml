@@ -1,0 +1,21 @@
+name: Feature request
+description: Explain a user need and the proposed behavior.
+title: '[Feature]: '
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: User need
+      description: What task should become possible or easier?
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Proposed behavior and acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Data, privacy and compatibility impact
