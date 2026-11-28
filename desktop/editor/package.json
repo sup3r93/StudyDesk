@@ -1,0 +1,21 @@
+{
+  "name": "studydesk-editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tiptap/core": "3.35.1",
+    "@tiptap/starter-kit": "3.35.1",
+    "@tiptap/extension-table": "3.35.1",
+    "@tiptap/extension-image": "3.35.1"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.4.0"
+  }
+}

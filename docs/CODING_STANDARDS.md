@@ -5,8 +5,9 @@
 - Write application code only in C#, TypeScript or Python. XAML, CSS and declarative configuration
   support those projects.
 - Keep Windows-specific code in `desktop/` and data-service code in `server/`.
-- Write identifiers, comments, errors, UI text and technical documentation in English. Maintain
-  `README.md` and `README.it.md` together.
+- Write identifiers, comments, internal diagnostics and technical documentation in English. Keep
+  user-facing text in Italian and English resource catalogs, with matching keys and format
+  arguments. Maintain `README.md` and `README.it.md` together.
 - Document every class and method/function with its purpose, inputs, output and meaningful failure
   behavior. Use XML documentation for C#, TSDoc/JSDoc notation in TypeScript and docstrings in
   Python.

@@ -1,0 +1,35 @@
+StudyDesk Chromium notices provenance
+=====================================
+
+Chromium.NOTICES.html is an unmodified, byte-for-byte copy of CREDITS.html
+from the official CEF distribution matching the application's runtime:
+
+NuGet package: chromiumembeddedframework.runtime.win-x64 156.0.30
+CEF ProductVersion: 156.0.30+g6028375+chromium-156.0.8078.96
+CEF source commit: 6028375a4532fb89d23b58635f5c0d3a82c93959
+Chromium source commit: 2ad9b7f5a86846e0b264090723a6a78964bb84c4
+
+These identities were read from the installed package's README.txt and
+the libcef.dll version resource in the audited desktop output.
+
+Official distribution index: https://cef-builds.spotifycdn.com/index.json
+Archive: https://cef-builds.spotifycdn.com/cef_binary_156.0.30%2Bg6028375%2Bchromium-156.0.8078.96_windows64_minimal.tar.bz2
+Archive member: cef_binary_156.0.30+g6028375+chromium-156.0.8078.96_windows64_minimal/CREDITS.html
+Credits size: 5398776 bytes
+Credits SHA-256: 13cbdb584882d6f8a356e46db986f86b660fe1a357e2ab05d4e6a37aec437e69
+
+The member was read with a bounded tar/bzip2 stream. Only
+409600 compressed bytes were consumed; the complete
+archive was not downloaded. The index lists the archive SHA-1 below, but
+that complete-archive checksum was not verified and is not represented
+as a verified integrity check:
+1fedfc8dd0274caec9183a709ad1ed7856867b91
+
+The matching NuGet README's LICENSING section points to CREDITS.html or
+about:credits for Chromium and third-party licensing information. The
+packaged editor deliberately disallows arbitrary browser navigation;
+this standalone, unmodified document preserves those notices without
+relaxing the editor's resource policy.
+
+This file records provenance and scope; it does not assert legal
+qualification of every separately redistributed operating-system DLL.

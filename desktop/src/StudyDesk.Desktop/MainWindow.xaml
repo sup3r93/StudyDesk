@@ -1,0 +1,143 @@
+<Window x:Class="StudyDesk.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:loc="clr-namespace:StudyDesk.Desktop.Localization"
+        xmlns:editor="clr-namespace:StudyDesk.Desktop.Editor"
+        Style="{StaticResource StudyDesk.WindowStyle}" Icon="/StudyDesk;component/Assets/StudyDesk.ico" Title="{Binding [app.title], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Width="1320" Height="860"
+        MinWidth="1000" MinHeight="700" WindowStyle="None" ResizeMode="CanResize"
+        Loaded="WindowLoaded" Closing="WindowClosing" Closed="WindowClosed" PreviewKeyDown="WindowPreviewKeyDown">
+  <shell:WindowChrome.WindowChrome>
+    <shell:WindowChrome CaptionHeight="48" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="8" UseAeroCaptionButtons="False" />
+  </shell:WindowChrome.WindowChrome>
+  <Window.Resources>
+    <Style x:Key="WorkspaceCard" TargetType="Border">
+      <Setter Property="Background" Value="{StaticResource StudyDesk.PanelBrush}" /><Setter Property="BorderBrush" Value="{StaticResource StudyDesk.BorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="10" /><Setter Property="Padding" Value="20" />
+    </Style>
+    <Style x:Key="SectionCaption" TargetType="TextBlock"><Setter Property="FontSize" Value="11" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource StudyDesk.MutedTextBrush}" /></Style>
+  </Window.Resources>
+  <Border BorderBrush="{StaticResource StudyDesk.BorderBrush}" BorderThickness="1" Background="{StaticResource StudyDesk.WindowBrush}">
+    <Grid>
+      <Grid.RowDefinitions><RowDefinition Height="48" /><RowDefinition Height="64" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="30" /></Grid.RowDefinitions>
+      <!-- A quiet native caption strip keeps the document controls out of the draggable area. -->
+      <Grid Grid.Row="0" Background="{StaticResource StudyDesk.WindowBrush}">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="230" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0,0,0">
+          <Border Width="29" Height="29" Background="#263E3B" CornerRadius="7" Margin="0,0,10,0">
+            <Viewbox Margin="6"><Path Data="M 1,2 L 8,2 L 10,4 L 12,2 L 19,2 L 19,17 L 12,17 L 10,19 L 8,17 L 1,17 Z M 10,4 L 10,19" Stroke="{StaticResource StudyDesk.AccentBrush}" StrokeThickness="1.7" Fill="Transparent" /></Viewbox>
+          </Border>
+          <TextBlock Text="{Binding [app.title], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="{Binding [app.windowSubtitle], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Foreground="{StaticResource StudyDesk.MutedTextBrush}" FontSize="12" VerticalAlignment="Center" Margin="0,0,20,0" />
+          <ComboBox x:Name="LanguagePicker" Width="138" MinHeight="32" FontSize="12" SelectionChanged="LanguageSelectionChanged" AutomationProperties.Name="{Binding [language.label], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [language.label], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+            <ComboBoxItem Tag="auto" Content="{Binding [language.auto], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" /><ComboBoxItem Tag="it" Content="{Binding [language.italian], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" /><ComboBoxItem Tag="en" Content="{Binding [language.english], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+          </ComboBox>
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" shell:WindowChrome.IsHitTestVisibleInChrome="True" Margin="0,0,6,0">
+          <Button Content="—" Style="{StaticResource StudyDesk.IconButton}" Width="42" Height="36" Click="MinimizeClicked" AutomationProperties.Name="{Binding [window.minimizeAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [window.minimize], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+          <Button Content="□" Style="{StaticResource StudyDesk.IconButton}" Width="42" Height="36" Click="MaximizeClicked" AutomationProperties.Name="{Binding [window.maximizeAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [window.maximize], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+          <Button Content="✕" Style="{StaticResource StudyDesk.IconButton}" Width="42" Height="36" Click="CloseWindowClicked" AutomationProperties.Name="{Binding [window.closeAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [window.close], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+        </StackPanel>
+      </Grid>
+      <Border Grid.Row="1" Background="{StaticResource StudyDesk.PanelBrush}" BorderBrush="{StaticResource StudyDesk.BorderBrush}" BorderThickness="0,1,0,1" Padding="20,10">
+        <Grid>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+          <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+            <TextBlock Text="{Binding [workspace.caption], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Style="{StaticResource SectionCaption}" Margin="0,0,0,3" />
+            <TextBlock x:Name="CurrentSpaceText" Text="{Binding [workspace.default], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel Width="200" VerticalAlignment="Center" Margin="0,0,12,0">
+              <TextBlock Text="{Binding [server.caption], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Style="{StaticResource SectionCaption}" Margin="0,0,0,3" />
+              <TextBlock x:Name="ConnectionStatus" Text="{Binding [status.workingOffline], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+            </StackPanel>
+            <Button x:Name="SyncButton" Content="{Binding [toolbar.synchronize], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="SynchronizeClicked" IsEnabled="False" Style="{StaticResource StudyDesk.SecondaryButton}" Margin="0,0,8,0" />
+            <Button x:Name="CancelSyncButton" Content="{Binding [toolbar.cancelSync], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="CancelSyncClicked" Visibility="Collapsed" Style="{StaticResource StudyDesk.SecondaryButton}" Margin="0,0,8,0" />
+            <Button x:Name="NewNoteButton" Content="{Binding [toolbar.newNoteWithIcon], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="NewNoteClicked" IsEnabled="False" Style="{StaticResource StudyDesk.PrimaryButton}" AutomationProperties.Name="{Binding [common.createNote], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [toolbar.newNoteHint], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Margin="0,0,8,0" />
+            <Button Content="?" Click="ReportIssueClicked" Style="{StaticResource StudyDesk.IconButton}" AutomationProperties.Name="{Binding [toolbar.reportIssueAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [toolbar.reportIssueAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      <Border x:Name="InitializationBanner" Grid.Row="2" Background="{StaticResource StudyDesk.RaisedBrush}" BorderBrush="{StaticResource StudyDesk.BorderBrush}" BorderThickness="0,0,0,1" Padding="20,12">
+        <DockPanel><Button x:Name="RetryEditorButton" DockPanel.Dock="Right" Content="{Binding [common.retry], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="RetryEditorClicked" Visibility="Collapsed" Margin="12,0,0,0" /><TextBlock x:Name="InitializationStatus" Text="{Binding [status.initializing], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" TextWrapping="Wrap" VerticalAlignment="Center" /></DockPanel>
+      </Border>
+      <Grid Grid.Row="3">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="230" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+        <Border Grid.Column="0" Background="{StaticResource StudyDesk.PanelBrush}" BorderBrush="{StaticResource StudyDesk.BorderBrush}" BorderThickness="0,0,1,0" Padding="16,20,16,16">
+          <Grid>
+            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+              <TextBlock Text="{Binding [sidebar.spaces], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Style="{StaticResource SectionCaption}" VerticalAlignment="Center" />
+              <Button x:Name="NewSpaceButton" Grid.Column="1" Content="＋" Style="{StaticResource StudyDesk.IconButton}" IsEnabled="False" Click="NewSpaceClicked" AutomationProperties.Name="{Binding [common.createSpace], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ToolTip="{Binding [toolbar.newSpaceHint], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+            </Grid>
+            <ComboBox x:Name="SpacePicker" Grid.Row="1" DisplayMemberPath="Title" SelectionChanged="SpaceSelectionChanged" AutomationProperties.Name="{Binding [sidebar.spacePicker], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Margin="0,0,0,16">
+              <ComboBox.ItemContainerStyle><Style TargetType="ComboBoxItem" BasedOn="{StaticResource StudyDesk.ComboBoxItem}"><Setter Property="AutomationProperties.Name" Value="{Binding Title, Mode=OneWay}" /></Style></ComboBox.ItemContainerStyle>
+            </ComboBox>
+            <Grid Grid.Row="2" Margin="0,0,0,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+              <TextBlock Text="{Binding [sidebar.notes], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Style="{StaticResource SectionCaption}" VerticalAlignment="Center" />
+              <CheckBox x:Name="ShowTrash" Grid.Column="1" Content="{Binding [sidebar.trash], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="12" Checked="TrashFilterChanged" Unchecked="TrashFilterChanged" AutomationProperties.Name="{Binding [sidebar.showTrashAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+            </Grid>
+            <Grid Grid.Row="3">
+              <ListBox x:Name="PageList" SelectionChanged="PageSelectionChanged" AutomationProperties.Name="{Binding [sidebar.notesAccessible], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Background="Transparent" BorderThickness="0">
+                <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem" BasedOn="{StaticResource StudyDesk.ListBoxItem}"><Setter Property="AutomationProperties.Name" Value="{Binding Title, Mode=OneWay}" /></Style></ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="0,2"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" /><TextBlock Text="{Binding UpdatedAt, StringFormat={}{0:dd MMM yyyy}}" FontSize="11" Foreground="{StaticResource StudyDesk.MutedTextBrush}" Margin="0,5,0,0" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+              </ListBox>
+              <StackPanel Margin="8,22,8,0" VerticalAlignment="Top" IsHitTestVisible="False">
+                <StackPanel.Style><Style TargetType="StackPanel"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding Items.Count, ElementName=PageList}" Value="0"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></StackPanel.Style>
+                <TextBlock x:Name="SidebarEmptyHeading" Text="{Binding [sidebar.emptyHeading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,0,8" /><TextBlock x:Name="SidebarEmptyBody" Text="{Binding [sidebar.emptyBody], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="12" Foreground="{StaticResource StudyDesk.MutedTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+            <StackPanel Grid.Row="4" Margin="0,16,0,0">
+              <Border Height="1" Background="{StaticResource StudyDesk.BorderBrush}" Margin="0,0,0,16" />
+              <TextBlock Text="{Binding [sidebar.localHint], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="12" Foreground="{StaticResource StudyDesk.MutedTextBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+              <Button x:Name="PairServerButton" Content="{Binding [toolbar.connectServer], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="PairServerClicked" IsEnabled="False" AutomationProperties.Name="{Binding [toolbar.connectServer], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" HorizontalAlignment="Stretch" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Grid Grid.Column="1" Margin="24,20,24,16">
+          <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+          <Grid Grid.Row="0" Margin="0,0,0,20"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,16,0">
+              <TextBox x:Name="TitleBox" Text="{Binding [empty.title], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="27" FontWeight="SemiBold" IsReadOnly="True" TextChanged="TitleChanged" AutomationProperties.Name="{Binding [dialog.noteTitle], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}">
+                <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource StudyDesk.TextBox}"><Style.Triggers><Trigger Property="IsReadOnly" Value="True"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Padding" Value="0,4" /></Trigger></Style.Triggers></Style></TextBox.Style>
+              </TextBox>
+              <TextBlock x:Name="PageSummary" Text="{Binding [empty.summary], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Foreground="{StaticResource StudyDesk.MutedTextBrush}" FontSize="12" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <Button x:Name="EditButton" Grid.Column="1" Content="{Binding [actions.edit], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" IsEnabled="False" Click="EditClicked" VerticalAlignment="Top" Visibility="Collapsed" />
+          </Grid>
+          <TabControl x:Name="Sections" Grid.Row="1" SelectionChanged="SectionSelectionChanged">
+            <TabItem Header="{Binding [tabs.editor], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" AutomationProperties.Name="{Binding [tabs.editor], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}">
+              <Grid>
+                <editor:PackagedEditorBrowser x:Name="EditorBrowser" AutomationProperties.Name="{Binding [editor.accessibleName], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+                <Border x:Name="EmptyNoteState" Background="{StaticResource StudyDesk.WindowBrush}">
+                  <StackPanel Width="360" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Width="56" Height="56" Background="#263E3B" CornerRadius="16" HorizontalAlignment="Left" Margin="0,0,0,20"><Viewbox Margin="15"><Path Data="M 1,2 L 8,2 L 10,4 L 12,2 L 19,2 L 19,17 L 12,17 L 10,19 L 8,17 L 1,17 Z M 10,4 L 10,19" Stroke="{StaticResource StudyDesk.AccentBrush}" StrokeThickness="1.7" Fill="Transparent" /></Viewbox></Border>
+                    <TextBlock x:Name="EmptyStateHeading" Text="{Binding [empty.heading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="25" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,12" />
+                    <TextBlock x:Name="EmptyStateBody" Text="{Binding [empty.body], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Foreground="{StaticResource StudyDesk.MutedTextBrush}" TextWrapping="Wrap" LineHeight="23" Margin="0,0,0,24" />
+                    <Button x:Name="EmptyStateAction" Content="{Binding [empty.createSpace], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Style="{StaticResource StudyDesk.PrimaryButton}" Click="EmptyStateActionClicked" IsEnabled="False" HorizontalAlignment="Left" />
+                  </StackPanel>
+                </Border>
+              </Grid>
+            </TabItem>
+            <TabItem Header="{Binding [tabs.details], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}"><ScrollViewer VerticalScrollBarVisibility="Auto"><Border Style="{StaticResource WorkspaceCard}" Margin="0,16,0,0"><StackPanel><TextBlock Text="{Binding [details.heading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" /><TextBlock x:Name="DetailsText" Text="{Binding [details.empty], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" TextWrapping="Wrap" LineHeight="24" /></StackPanel></Border></ScrollViewer></TabItem>
+            <TabItem Header="{Binding [tabs.progress], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" IsEnabled="False" ToolTip="{Binding [tabs.progressUnavailable], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+            <TabItem Header="{Binding [tabs.sources], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" IsEnabled="False" ToolTip="{Binding [tabs.sourcesUnavailable], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" />
+            <TabItem Header="{Binding [tabs.actions], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,16,8,0"><StackPanel>
+                <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                  <Border Grid.Column="0" Style="{StaticResource WorkspaceCard}"><StackPanel><TextBlock Text="{Binding [actions.workHeading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" /><TextBlock Text="{Binding [actions.workDescription], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Foreground="{StaticResource StudyDesk.MutedTextBrush}" TextWrapping="Wrap" Margin="0,0,0,16" /><Button x:Name="SaveNowButton" Content="{Binding [actions.save], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="SaveNowClicked" IsEnabled="False" HorizontalAlignment="Left" Margin="0,0,0,8" /><Button x:Name="ImageButton" Content="{Binding [actions.insertImage], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="InsertImageClicked" IsEnabled="False" HorizontalAlignment="Left" ToolTip="{Binding [actions.imageHint], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" /></StackPanel></Border>
+                  <Border Grid.Column="2" Style="{StaticResource WorkspaceCard}"><StackPanel><TextBlock Text="{Binding [actions.exportHeading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" /><TextBlock Text="{Binding [actions.exportDescription], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Foreground="{StaticResource StudyDesk.MutedTextBrush}" TextWrapping="Wrap" Margin="0,0,0,16" /><Button x:Name="PdfButton" Content="{Binding [actions.exportPdf], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="PdfClicked" IsEnabled="False" HorizontalAlignment="Left" Margin="0,0,0,8" /><Button x:Name="ExportButton" Content="{Binding [actions.exportJson], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="ExportClicked" IsEnabled="False" HorizontalAlignment="Left" /></StackPanel></Border>
+                </Grid>
+                <Border Style="{StaticResource WorkspaceCard}" Margin="0,0,0,16"><StackPanel><TextBlock Text="{Binding [issues.heading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" /><TextBlock x:Name="IssuesStatus" Text="{Binding [issues.none], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" TextWrapping="Wrap" Foreground="{StaticResource StudyDesk.MutedTextBrush}" Margin="0,0,0,16" /><ListBox x:Name="IssuesList" DisplayMemberPath="Label" Height="108" SelectionChanged="IssueSelectionChanged" AutomationProperties.Name="{Binding [issues.heading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}"><ListBox.ItemContainerStyle><Style TargetType="ListBoxItem" BasedOn="{StaticResource StudyDesk.ListBoxItem}"><Setter Property="AutomationProperties.Name" Value="{Binding Label, Mode=OneWay}" /></Style></ListBox.ItemContainerStyle></ListBox><WrapPanel Margin="0,12,0,0"><Button Content="{Binding [issues.refresh], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="RefreshIssuesClicked" Margin="0,0,8,8" /><Button x:Name="RetryDraftButton" Content="{Binding [issues.retryDraft], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" IsEnabled="False" Click="RetryDraftClicked" Margin="0,0,8,8" /><Button x:Name="UseServerButton" Content="{Binding [issues.useServer], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" IsEnabled="False" Click="UseServerClicked" Margin="0,0,0,8" /></WrapPanel></StackPanel></Border>
+                <Border Style="{StaticResource WorkspaceCard}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel Margin="0,0,16,0"><TextBlock Text="{Binding [actions.trashHeading], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontWeight="SemiBold" Margin="0,0,0,6" /><TextBlock Text="{Binding [actions.trashDescription], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Foreground="{StaticResource StudyDesk.MutedTextBrush}" FontSize="12" TextWrapping="Wrap" /></StackPanel><Button x:Name="TrashButton" Grid.Column="1" Content="{Binding [actions.trash], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" Click="TrashClicked" IsEnabled="False" VerticalAlignment="Center" /></Grid></Border>
+              </StackPanel></ScrollViewer>
+            </TabItem>
+          </TabControl>
+        </Grid>
+      </Grid>
+      <Border Grid.Row="4" BorderBrush="{StaticResource StudyDesk.BorderBrush}" BorderThickness="0,1,0,0" Padding="18,0"><Grid><TextBlock x:Name="SaveStatus" Text="{Binding [status.openingYourWorkspace], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="11" VerticalAlignment="Center" Foreground="{StaticResource StudyDesk.MutedTextBrush}" AutomationProperties.LiveSetting="Polite" /><TextBlock Text="{Binding [workspace.private], Source={x:Static loc:LocalizationService.Instance}, Mode=OneWay}" FontSize="10" Foreground="{StaticResource StudyDesk.MutedTextBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid></Border>
+    </Grid>
+  </Border>
+</Window>

@@ -8,3 +8,12 @@ test-results/
 playwright-report/
 package-lock.json
 LICENSE
+
+# Local AI instructions are not part of the public project.
+AI_RULES.md
+
+# NuGet-generated dependency locks retain their tool-owned formatting.
+packages.lock.json
+
+# Preserve upstream third-party legal texts byte for byte.
+desktop/src/StudyDesk.Desktop/ThirdParty/

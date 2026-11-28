@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/shared/">
+    <Project Path="../desktop/src/StudyDesk.Desktop.Core/StudyDesk.Desktop.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/StudyDesk.Contracts/StudyDesk.Contracts.csproj" />
+    <Project Path="src/StudyDesk.Server.Core/StudyDesk.Server.Core.csproj" />
+    <Project Path="src/StudyDesk.Server/StudyDesk.Server.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StudyDesk.Server.Tests/StudyDesk.Server.Tests.csproj" />
+    <Project Path="tests/StudyDesk.Server.Api.Tests/StudyDesk.Server.Api.Tests.csproj" />
+    <Project Path="tests/StudyDesk.Sync.Integration.Tests/StudyDesk.Sync.Integration.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" width="256" height="256" role="img" aria-labelledby="title description">
+  <title id="title">StudyDesk</title>
+  <desc id="description">The original StudyDesk mint open-book caption mark. Created with AI assistance; licensed under the repository MIT license.</desc>
+  <!-- Ported from the native caption: a 29-DIP rounded badge and the original book geometry. -->
+  <rect width="29" height="29" rx="7" fill="#263E3B" />
+  <path d="M1,2 L8,2 L10,4 L12,2 L19,2 L19,17 L12,17 L10,19 L8,17 L1,17 Z M10,4 L10,19" transform="matrix(0.84149743917624598 0 0 0.84149743917624598 6.1481377556728578 6)" fill="none" stroke="#93DEC9" stroke-width="1.7" />
+</svg>

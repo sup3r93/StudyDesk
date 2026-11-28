@@ -1,0 +1,25 @@
+<Application x:Class="StudyDesk.Desktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Themes/StudyDeskTheme.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <!-- Standard controls inherit the shared theme; derived windows use its explicit WindowStyle. -->
+      <Style x:Key="AppWindowStyle" TargetType="Window" BasedOn="{StaticResource StudyDesk.WindowStyle}" />
+      <Style TargetType="Button" BasedOn="{StaticResource StudyDesk.SecondaryButton}" />
+      <Style TargetType="PasswordBox" BasedOn="{StaticResource StudyDesk.PasswordBox}" />
+      <Style TargetType="ToolTip" BasedOn="{StaticResource StudyDesk.ToolTip}" />
+      <Style TargetType="Separator" BasedOn="{StaticResource StudyDesk.Separator}" />
+      <Style TargetType="TextBox" BasedOn="{StaticResource StudyDesk.TextBox}" />
+      <Style TargetType="ComboBox" BasedOn="{StaticResource StudyDesk.ComboBox}" />
+      <Style TargetType="CheckBox" BasedOn="{StaticResource StudyDesk.CheckBox}" />
+      <Style TargetType="TabControl" BasedOn="{StaticResource StudyDesk.TabControl}" />
+      <Style TargetType="TabItem" BasedOn="{StaticResource StudyDesk.TabItem}" />
+      <Style TargetType="ListBox" BasedOn="{StaticResource StudyDesk.ListBox}" />
+      <Style TargetType="ListBoxItem" BasedOn="{StaticResource StudyDesk.ListBoxItem}" />
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>
