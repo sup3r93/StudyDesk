@@ -1,0 +1,140 @@
+name: StudyDesk checks
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+
+# Pull requests never receive write access or runtime secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: repository-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Repository quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install pinned tooling without lifecycle scripts
+        run: npm ci --ignore-scripts
+      - name: Check repository formatting
+        run: npm run check
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan Git history with redacted findings
+        uses: docker://ghcr.io/gitleaks/gitleaks@sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb
+        env:
+          GIT_CONFIG_COUNT: '1'
+          GIT_CONFIG_KEY_0: safe.directory
+          GIT_CONFIG_VALUE_0: /github/workspace
+        with:
+          args: git --redact --verbose --config .gitleaks.toml --log-opts=--all .
+
+  dependencies:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: never
+
+  server:
+    name: Server build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14c95bf1 # v5
+        with:
+          dotnet-version: '10.0.x'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+      - name: Restore locked server and integration dependencies
+        run: dotnet restore server/StudyDesk.Server.slnx --locked-mode
+      - name: Verify C# formatting and analyzers
+        run: dotnet format server/StudyDesk.Server.slnx --verify-no-changes --no-restore
+      - name: Build with warnings treated as errors
+        run: dotnet build server/StudyDesk.Server.slnx --configuration Release --no-restore
+      - name: Run server and offline synchronization tests
+        run:
+          dotnet test server/StudyDesk.Server.slnx --configuration Release --no-build --logger
+          "trx;LogFilePrefix=server"
+
+  desktop:
+    name: Windows desktop build and tests
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/editor/package-lock.json
+      - name: Install pinned editor dependencies
+        working-directory: desktop/editor
+        run: npm ci --ignore-scripts
+      - name: Type-check and build the local editor
+        working-directory: desktop/editor
+        run: npm run build
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14c95bf1 # v5
+        with:
+          dotnet-version: '10.0.x'
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
+      - name: Restore locked Windows dependencies
+        run: dotnet restore desktop/StudyDesk.Desktop.slnx --locked-mode
+      - name: Verify desktop C# formatting and analyzers
+        run: dotnet format desktop/StudyDesk.Desktop.slnx --verify-no-changes --no-restore
+      - name: Build the Windows desktop and bundled editor
+        run: dotnet build desktop/StudyDesk.Desktop.slnx --configuration Release --no-restore
+      - name: Run offline persistence tests
+        run:
+          dotnet test desktop/tests/StudyDesk.Desktop.Core.Tests/StudyDesk.Desktop.Core.Tests.csproj
+          --configuration Release --no-build --logger "trx;LogFilePrefix=desktop"
+      - name: Run native transport and editor boundary tests
+        run:
+          dotnet test desktop/tests/StudyDesk.Desktop.Ui.Tests/StudyDesk.Desktop.Ui.Tests.csproj
+          --configuration Release --no-build --logger "trx;LogFilePrefix=desktop-boundary"
+      - name: Run real packaged editor and autosave smoke test
+        run:
+          dotnet run --project
+          desktop/tests/StudyDesk.Desktop.Runtime.Tests/StudyDesk.Desktop.Runtime.Tests.csproj
+          --configuration Release --no-build
+
+      - name: Verify local editor factory failures stay offline
+        run:
+          dotnet run --project
+          desktop/tests/StudyDesk.Desktop.Runtime.Tests/StudyDesk.Desktop.Runtime.Tests.csproj
+          --configuration Release --no-build -- --reject-editor-factory

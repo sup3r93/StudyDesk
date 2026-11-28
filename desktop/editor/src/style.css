@@ -1,0 +1,220 @@
+:root {
+  font-family: 'Segoe UI', sans-serif;
+  color: #eaf1f7;
+  background: #141c26;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+#toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+  background: #1b2735;
+  border-bottom: 1px solid #344658;
+}
+button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  width: 36px;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #eaf1f7;
+  font:
+    16px/1 'Segoe UI',
+    sans-serif;
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  background: #293d50;
+  border-color: #425c70;
+}
+button[aria-pressed='true'] {
+  background: #24443f;
+  color: #93dec9;
+  border-color: #4a8a77;
+}
+button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+button[data-tool='editor.bold'] {
+  font-weight: 750;
+}
+button[data-tool='editor.italic'] {
+  font-style: italic;
+}
+button[data-tool='editor.underline'] {
+  text-decoration: underline;
+}
+button[data-tool='editor.heading'],
+button[data-tool='editor.table'],
+button[data-tool='editor.undo'] {
+  margin-left: 9px;
+}
+button:focus-visible,
+#paper-scroll:focus-visible {
+  outline: 2px solid #93dec9;
+  outline-offset: 2px;
+}
+#notice {
+  padding: 12px 16px;
+  color: #172c3d;
+  background: #fff5d4;
+  font-size: 13px;
+}
+#notice[hidden] {
+  display: none;
+}
+#paper-scroll {
+  overflow: auto;
+  flex: 1;
+  padding: 24px;
+  background: #111923;
+  scrollbar-color: #52687b #141c26;
+  scrollbar-width: thin;
+}
+#paper-stage {
+  position: relative;
+  margin: 0 auto;
+  width: 210mm;
+  padding: 20mm;
+}
+#sheets {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.sheet {
+  position: absolute;
+  left: 0;
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  box-shadow: 0 5px 24px #0000003d;
+}
+#editor {
+  position: relative;
+  width: 170mm;
+  color: #223340;
+}
+.tiptap {
+  outline: none;
+  width: 170mm;
+  min-height: 257mm;
+  column-count: 1;
+  column-height: 257mm;
+  column-wrap: wrap;
+  column-fill: auto;
+  row-gap: 52mm;
+  font:
+    16px/1.7 'Segoe UI',
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+.tiptap p {
+  margin: 0 0 10px;
+}
+.tiptap h1,
+.tiptap h2,
+.tiptap h3 {
+  break-after: avoid;
+  line-height: 1.25;
+  font-weight: 650;
+}
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  break-inside: avoid;
+  border-radius: 3px;
+}
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+.tiptap th,
+.tiptap td {
+  border: 1px solid #899aa6;
+  padding: 7px;
+  min-width: 24px;
+  vertical-align: top;
+}
+.tiptap th {
+  background: #eef4f6;
+}
+.tiptap tr {
+  break-inside: avoid;
+}
+.tiptap .selectedCell {
+  background: #d3eee8;
+}
+.tiptap blockquote {
+  border-left: 3px solid #8ca4b3;
+  margin-left: 0;
+  padding-left: 15px;
+}
+.tiptap pre {
+  background: #eef2f4;
+  padding: 12px;
+  border-radius: 5px;
+  white-space: pre-wrap;
+}
+#paper-status {
+  padding: 9px 14px;
+  border-top: 1px solid #344658;
+  color: #b4c3d1;
+  background: #1b2735;
+  font-size: 11px;
+}
+@page {
+  size: A4;
+  margin: 20mm;
+}
+@media print {
+  body,
+  #app,
+  #paper-scroll,
+  #paper-stage,
+  #editor {
+    display: block;
+    height: auto;
+    width: auto;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    background: #fff;
+  }
+  #paper-stage {
+    zoom: 1 !important;
+  }
+  #toolbar,
+  #notice,
+  #paper-status,
+  #sheets {
+    display: none;
+  }
+  .tiptap {
+    display: block;
+    width: auto;
+    min-height: 0;
+    column-count: auto;
+    column-height: auto;
+    column-wrap: nowrap;
+    row-gap: 0;
+  }
+}

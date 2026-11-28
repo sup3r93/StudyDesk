@@ -39,3 +39,19 @@ appsettings.Local.json
 *.p12
 *.ppk
 *.log
+
+# Local AI instructions are not part of the public project.
+AI_RULES.md
+*.studydesk-pairing.json
+*.studydesk-backup
+*.studydesk-export
+
+# Private workspace recovery, browser state and test diagnostics.
+workspace/
+recovery/
+browser-cache/
+device-token.bin
+connection.json
+TestResults/
+*.trx
+*.tmp

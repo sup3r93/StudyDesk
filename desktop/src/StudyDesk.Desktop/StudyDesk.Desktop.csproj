@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Required only by the source-generated Windows module-path interop. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AssemblyName>StudyDesk</AssemblyName>
+    <ApplicationIcon>Assets/StudyDesk.ico</ApplicationIcon>
+    <RootNamespace>StudyDesk.Desktop</RootNamespace>
+    <BundledEditorDirectory Condition="'$(BundledEditorDirectory)' == ''">$(MSBuildProjectDirectory)/../../editor/dist</BundledEditorDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets/StudyDesk.ico" />
+    <EmbeddedResource Include="Localization/en.json" LogicalName="StudyDesk.Desktop.Localization.en.json" />
+    <EmbeddedResource Include="Localization/it.json" LogicalName="StudyDesk.Desktop.Localization.it.json" />
+    <ProjectReference Include="../StudyDesk.Desktop.Core/StudyDesk.Desktop.Core.csproj" />
+    <PackageReference Include="CefSharp.Wpf.NETCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ThirdParty/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(BundledEditorDirectory)/**/*" Link="editor/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <!-- A green desktop build must include the complete, previously built offline editor. -->
+  <Target Name="ValidateBundledEditor" BeforeTargets="PrepareForBuild;PrepareForPublish">
+    <ItemGroup>
+      <_BundledEditorScript Include="$(BundledEditorDirectory)/assets/*.js" />
+      <_BundledEditorStyle Include="$(BundledEditorDirectory)/assets/*.css" />
+    </ItemGroup>
+    <Error Condition="!Exists('$(BundledEditorDirectory)/index.html') Or '@(_BundledEditorScript)' == '' Or '@(_BundledEditorStyle)' == ''"
+           Text="The offline editor bundle is missing or incomplete. From the repository root, run npm --prefix desktop/editor ci --ignore-scripts --no-audit --no-fund, then npm --prefix desktop/editor run build, before building or publishing the desktop." />
+  </Target>
+  <Import Project="Packaging/WindowsCefAssets.targets" />
+</Project>

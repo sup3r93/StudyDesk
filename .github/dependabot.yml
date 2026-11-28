@@ -1,8 +1,9 @@
-# Add application ecosystems only when their actual manifests exist.
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: /
+    directories:
+      - /
+      - /desktop/editor
     target-branch: dev
     schedule:
       interval: weekly
@@ -11,7 +12,21 @@ updates:
       timezone: Europe/Rome
     open-pull-requests-limit: 5
     groups:
-      tooling-minor-and-patch:
+      npm-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+  - package-ecosystem: nuget
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: weekly
+      day: monday
+      time: '08:15'
+      timezone: Europe/Rome
+    open-pull-requests-limit: 5
+    groups:
+      dotnet-minor-and-patch:
         update-types:
           - minor
           - patch
@@ -21,6 +36,6 @@ updates:
     schedule:
       interval: weekly
       day: monday
-      time: '08:00'
+      time: '08:30'
       timezone: Europe/Rome
     open-pull-requests-limit: 5

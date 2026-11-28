@@ -11,9 +11,16 @@ facoltativo e gestito dall'utilizzatore.
 
 ## Stato del progetto
 
-**Fase di preparazione della repository e progettazione.** Applicazione, installer e protocollo di
-sincronizzazione non sono ancora implementati o pubblicati. Le funzionalità elencate sono requisiti
-concordati, non funzionalità già disponibili. Nessun servizio esistente è stato migrato o eliminato.
+**Fondazione eseguibile in verifica locale; nessuna versione applicativa pubblicata.** La bozza
+contiene un host Windows WPF/CEF, l'editor Tiptap incluso, archivi SQLite, un server ASP.NET Core
+protetto tramite token e test di comportamento. Il collaudo di modifica offline, interfaccia
+bilingue e riavvio è passato; restano in corso i controlli finali di sicurezza e del pacchetto. La
+presenza del codice non significa che tutte le funzionalità previste siano già disponibili.
+
+Consultare [lo stato di integrazione](PROJECT_STATUS.md), la [guida desktop](desktop/README.it.md) e
+la [guida server](server/README.it.md) per comportamento e limiti attuali. Permessi di condivisione,
+collaborazione simultanea, allegati, Windows Hello, esportazioni complete e migrazione di Studiario
+restano fasi successive. Nessun servizio esistente è stato migrato o eliminato.
 
 ## Comportamento previsto
 
@@ -38,9 +45,11 @@ docs/       Architettura, requisiti, roadmap e regole del codice
 .github/    Controlli automatici, Dependabot, modelli e definizioni dei ruleset
 ```
 
-Il codice applicativo userà **C#, TypeScript e, quando utile, Python**. Commenti, identificativi,
-interfaccia e documentazione tecnica saranno in inglese. Il README principale sarà mantenuto in
-inglese e italiano. Sono ammesse soltanto librerie applicative gratuite e open source.
+Il codice applicativo usa **C#, TypeScript e, quando utile, Python**. Commenti, identificativi e
+documentazione tecnica restano in inglese. L'interfaccia è disponibile in **italiano e inglese**,
+con selettore e preferenza locale conservata; gli appunti scritti dall'utilizzatore non vengono
+tradotti automaticamente. Il README è mantenuto in entrambe le lingue. Sono ammesse soltanto
+librerie applicative gratuite e open source.
 
 ## Accesso dei dispositivi e segreti
 
@@ -69,18 +78,29 @@ l'approvazione di un secondo revisore. Le definizioni sono in `.github/rulesets/
 [guida alla gestione](docs/REPOSITORY_GOVERNANCE.md) distingue i file dalle impostazioni effettive
 di GitHub.
 
-## Controllo della formattazione
+## Compilazione e verifiche
 
-Per gli strumenti della repository usare Node.js 24 LTS:
+Usare Node.js 24 LTS e l'SDK .NET 10. Compilare l'editor locale prima dell'host Windows:
 
 ```text
 npm ci --ignore-scripts
 npm run check
+npm --prefix desktop/editor ci --ignore-scripts
+npm --prefix desktop/editor run build
+dotnet test server/StudyDesk.Server.slnx
+dotnet test desktop/StudyDesk.Desktop.slnx
+dotnet run --project desktop/tests/StudyDesk.Desktop.Runtime.Tests/StudyDesk.Desktop.Runtime.Tests.csproj
 ```
 
-Attualmente questi comandi verificano la formattazione della repository. Compilazione, analizzatori
-e test di comportamento saranno aggiunti insieme ai progetti applicativi. La formattazione non
-dimostra la correttezza dell'applicazione. Vedi [regole del codice](docs/CODING_STANDARDS.md).
+La soluzione desktop richiede Windows x64. Il server è progettato per Windows e Linux; i test locali
+su Windows non dimostrano il funzionamento su Linux. La definizione CI comprende controlli server su
+Linux e desktop su Windows, ma deve riuscire su GitHub prima di dichiararla verificata lì. Le guide
+dei componenti descrivono configurazione privata e avvio. L'eseguibile di collaudo dell'editor reale
+viene eseguito separatamente dai test unitari. Il
+[rapporto sull'interfaccia](docs/DESKTOP_UI_VERIFICATION.md) documenta risultati e limiti.
+
+I controlli automatici affiancano il collaudo reale di modifica offline, riavvio e revisione della
+sicurezza. Vedi [regole del codice](docs/CODING_STANDARDS.md).
 
 ## Migrazione
 

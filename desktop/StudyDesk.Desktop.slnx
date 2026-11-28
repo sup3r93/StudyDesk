@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="../server/src/StudyDesk.Contracts/StudyDesk.Contracts.csproj" />
+    <Project Path="src/StudyDesk.Desktop.Core/StudyDesk.Desktop.Core.csproj" />
+    <Project Path="src/StudyDesk.Desktop/StudyDesk.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StudyDesk.Desktop.Core.Tests/StudyDesk.Desktop.Core.Tests.csproj" />
+    <Project Path="tests/StudyDesk.Desktop.Ui.Tests/StudyDesk.Desktop.Ui.Tests.csproj" />
+    <Project Path="tests/StudyDesk.Desktop.Runtime.Tests/StudyDesk.Desktop.Runtime.Tests.csproj" />
+  </Folder>
+</Solution>

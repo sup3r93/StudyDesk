@@ -1,6 +1,11 @@
 # Architecture and accepted decisions
 
-Status: agreed requirements and proposed design; not implemented. Updated 2026-11-28.
+Status: accepted target architecture with a local implementation draft. Updated 2026-11-28.
+
+The current foundation uses WPF/CefSharp, a bundled Tiptap editor, Microsoft.Data.Sqlite and ASP.NET
+Core. Owner-only device access and conditional version-based synchronization are implemented in the
+working draft. Scoped sharing, CRDT collaboration, attachments and recovery/retention UI remain
+planned; consult PROJECT_STATUS.md for actual verification and unresolved work.
 
 ## Product boundary
 
@@ -10,8 +15,9 @@ repository distributes software, not access to the maintainer's server or data.
 
 The repository has two application boundaries: `desktop/` and `server/`. C#, TypeScript and Python
 are the permitted implementation languages. Use free and open-source libraries and preserve their
-notices. English is used for code, comments, UI and technical documentation; maintain English and
-Italian root READMEs. Disclose AI-assisted development.
+notices. Code, comments and technical documentation use English. The native interface and bundled
+editor are localized into Italian and English, with a persisted local preference. User content is
+never translated automatically. Maintain both root READMEs and disclose AI-assisted development.
 
 ## Local data and synchronization
 

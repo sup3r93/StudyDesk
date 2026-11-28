@@ -1,0 +1,28 @@
+<Project>
+  <!-- CEF marks FXC optional; Windows supplies it. Preserve all other Chromium native assets. -->
+  <Target Name="StudyDeskExcludeWindowsFxcBuildAsset" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <NativeCopyLocalItems Remove="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.Filename)%(NativeCopyLocalItems.Extension)' == 'd3dcompiler_47.dll'" />
+      <RuntimeTargetsCopyLocalItems Remove="@(RuntimeTargetsCopyLocalItems)" Condition="'%(RuntimeTargetsCopyLocalItems.Filename)%(RuntimeTargetsCopyLocalItems.Extension)' == 'd3dcompiler_47.dll'" />
+    </ItemGroup>
+  </Target>
+  <!-- Publish resolves package assets independently of Build; filter its native copy list too. -->
+  <Target Name="StudyDeskExcludeWindowsFxcPublishAsset" AfterTargets="_ResolveCopyLocalAssetsForPublish">
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Remove="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(_ResolvedCopyLocalPublishAssets.Filename)%(_ResolvedCopyLocalPublishAssets.Extension)' == 'd3dcompiler_47.dll'" />
+    </ItemGroup>
+  </Target>
+  <!-- Refuse stale output instead of silently redistributing a previous build's optional DLL. -->
+  <Target Name="StudyDeskVerifyWindowsFxcBuildOutput" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <_StudyDeskUnexpectedBuildFxc Include="$(TargetDir)**/d3dcompiler_47.dll" />
+    </ItemGroup>
+    <Error Condition="'@(_StudyDeskUnexpectedBuildFxc)' != ''" Text="StudyDesk uses the Windows-provided D3D compiler. A stale app-local d3dcompiler_47.dll remains in this output; rebuild into a clean output directory." />
+  </Target>
+  <Target Name="StudyDeskVerifyWindowsFxcPublishOutput" AfterTargets="Publish" Condition="'$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <_StudyDeskUnexpectedPublishFxc Include="$(PublishDir)**/d3dcompiler_47.dll" />
+    </ItemGroup>
+    <Error Condition="'@(_StudyDeskUnexpectedPublishFxc)' != ''" Text="StudyDesk uses the Windows-provided D3D compiler. A stale app-local d3dcompiler_47.dll remains in this publish directory; publish into a clean output directory." />
+  </Target>
+</Project>

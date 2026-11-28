@@ -11,9 +11,16 @@ server.
 
 ## Project status
 
-**Repository foundation and design stage.** The application, installer and synchronization protocol
-are not implemented or released yet. The features below are agreed requirements, not a list of
-working capabilities. No existing service has been migrated or removed.
+**Executable foundation under local validation; no application release yet.** The working draft
+contains a WPF/CEF Windows host, bundled Tiptap editor, SQLite stores, a token-protected ASP.NET
+Core server and behavioral tests. The offline editing, bilingual interface and restart walkthrough
+has passed; final security and packaging checks are still being completed. Source availability is
+not a claim that every planned feature works.
+
+See [the current integration status](PROJECT_STATUS.md), the [desktop guide](desktop/README.md) and
+the [server guide](server/README.md) for implemented behavior and limitations. Sharing permissions,
+real-time collaboration, attachments, Windows Hello, complete exports and Studiario migration remain
+later milestones. Existing services have not been migrated or removed.
 
 ## Intended experience
 
@@ -38,9 +45,11 @@ docs/       Architecture, requirements, roadmap and coding standards
 .github/    Automated checks, Dependabot, templates and ruleset definitions
 ```
 
-Application code will use **C#, TypeScript and, where useful, Python**. Source comments,
-identifiers, interface text and technical documentation use English. The main README is maintained
-in both English and Italian. Only free and open-source application libraries are accepted.
+Application code uses **C#, TypeScript and, where useful, Python**. Source comments, identifiers and
+technical documentation use English. The interface supports **Italian and English**, with a
+persisted local language selector; user-written notes are never translated automatically. The main
+README is maintained in both languages. Only free and open-source application libraries are
+accepted.
 
 ## Device access and secrets
 
@@ -70,18 +79,29 @@ required for this individual-maintainer project. Ruleset definitions live in `.g
 the [governance guide](docs/REPOSITORY_GOVERNANCE.md) distinguishes tracked configuration from
 GitHub settings.
 
-## Check repository formatting
+## Build and verification
 
-Use Node.js 24 LTS for repository tooling:
+Use Node.js 24 LTS and the .NET 10 SDK. Build the local editor before the Windows host:
 
 ```text
 npm ci --ignore-scripts
 npm run check
+npm --prefix desktop/editor ci --ignore-scripts
+npm --prefix desktop/editor run build
+dotnet test server/StudyDesk.Server.slnx
+dotnet test desktop/StudyDesk.Desktop.slnx
+dotnet run --project desktop/tests/StudyDesk.Desktop.Runtime.Tests/StudyDesk.Desktop.Runtime.Tests.csproj
 ```
 
-These commands currently check repository formatting. Application build, analyzer and behavioral
-tests will be added with their projects; formatting checks do not establish application correctness.
-See [coding standards](docs/CODING_STANDARDS.md).
+The desktop solution requires Windows x64. The server is designed for Windows and Linux; local
+Windows tests do not establish Linux runtime behavior. The application CI definition includes Linux
+server checks and Windows desktop checks, but it must pass on GitHub before being reported as
+verified there. The real packaged-editor smoke executable is run separately from the unit tests. See
+the component guides for private configuration and launch commands and the
+[interface verification report](docs/DESKTOP_UI_VERIFICATION.md) for measured results and limits.
+
+Automated checks complement a real offline editing/restart walkthrough and security review. See
+[coding standards](docs/CODING_STANDARDS.md).
 
 ## Migration
 

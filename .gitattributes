@@ -7,3 +7,6 @@
 *.pdf binary
 *.zip binary
 *.ico binary
+
+# Preserve upstream legal artifacts exactly and identify them as third-party material.
+desktop/src/StudyDesk.Desktop/ThirdParty/** -text -whitespace linguist-vendored
