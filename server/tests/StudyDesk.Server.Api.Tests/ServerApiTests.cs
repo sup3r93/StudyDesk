@@ -184,13 +184,37 @@ public sealed class ServerApiTests(ITestOutputHelper output)
         Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
         CreatedDevice device = await server.Devices.CreateAsync("Desktop", DeviceRole.Owner);
         server.Use(device.Token);
+        SyncSnapshotResponse before = await server.GetSnapshotAsync();
         using HttpResponseMessage malformed = await server.Client.PostAsync("/v1/sync/push", new StringContent("{", Encoding.UTF8, "application/json"));
         Assert.Equal(HttpStatusCode.BadRequest, malformed.StatusCode);
-        using HttpResponseMessage oversized = await server.Client.PostAsync("/v1/sync/push",
-            new StringContent(new string(' ', 16 * 1024 * 1024 + 1), Encoding.UTF8, "application/json"));
+        using SocketsHttpHandler handler = new()
+        {
+            AllowAutoRedirect = false,
+            UseProxy = false,
+            Expect100ContinueTimeout = TimeSpan.FromSeconds(30),
+        };
+        using HttpClient rejectionClient = new(handler, disposeHandler: false) { BaseAddress = server.Client.BaseAddress };
+        using AnnouncedOversizedContent content = new(16 * 1024 * 1024 + 1);
+        using HttpRequestMessage request = new(HttpMethod.Post, "/v1/sync/push")
+        {
+            Content = content,
+            Version = HttpVersion.Version11,
+            VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+        };
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", device.Token);
+        request.Headers.ExpectContinue = true;
+        // Wait for the early rejection instead of racing a large upload against Kestrel closing the connection.
+        using HttpResponseMessage oversized = await rejectionClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, oversized.StatusCode);
+        Assert.False(content.SerializationAttempted);
         using HttpResponseMessage noJson = await server.Client.PostAsync("/v1/sync/push", new StringContent("{}"));
         Assert.Equal(HttpStatusCode.UnsupportedMediaType, noJson.StatusCode);
+        SyncSnapshotResponse after = await server.GetSnapshotAsync();
+        Assert.Equal(before.ServerId, after.ServerId);
+        Assert.Equal(before.Generation, after.Generation);
+        Assert.Equal(before.Cursor, after.Cursor);
+        Assert.Empty(after.Spaces);
+        Assert.Empty(after.Pages);
     }
 
     /// <summary>A stalled authenticated upload does not prevent revocation and cannot apply after it.</summary>
@@ -261,6 +285,36 @@ public sealed class ServerApiTests(ITestOutputHelper output)
         using HttpResponseMessage snapshot = await server.Client.GetAsync("/v1/snapshot/chunks?offset=0");
         Assert.Equal(HttpStatusCode.OK, snapshot.StatusCode);
         Assert.Equal(created.Id, bundle.RootElement.GetProperty("deviceId").GetGuid());
+    }
+
+    /// <summary>Announces an oversized body and fails if the client uploads instead of observing early rejection.</summary>
+    private sealed class AnnouncedOversizedContent : HttpContent
+    {
+        private readonly long length;
+
+        /// <summary>Advertises a known JSON length so the real HTTP server can reject its headers.</summary>
+        public AnnouncedOversizedContent(long length)
+        {
+            this.length = length;
+            Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        }
+
+        /// <summary>Gets whether the transport incorrectly started the body before receiving the rejection.</summary>
+        public bool SerializationAttempted { get; private set; }
+
+        /// <summary>Rejects a continued upload; transport exceptions are not accepted as a successful server response.</summary>
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            SerializationAttempted = true;
+            throw new InvalidOperationException("The oversized request must be rejected before its body is uploaded.");
+        }
+
+        /// <summary>Provides the actual Content-Length announcement used by Kestrel's size check.</summary>
+        protected override bool TryComputeLength(out long computedLength)
+        {
+            computedLength = length;
+            return true;
+        }
     }
 
     /// <summary>Sends one JSON byte, then deliberately pauses the remaining upload until released.</summary>
