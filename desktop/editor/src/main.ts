@@ -61,6 +61,13 @@ function fitPaper(): void {
   measurePages();
 }
 
+/** Start a newly loaded or cleared note at its beginning without affecting edits, snapshots or UI language. */
+function resetDocumentScroll(): void {
+  const viewport = required<HTMLElement>('paper-scroll');
+  viewport.scrollTop = 0;
+  viewport.scrollLeft = 0;
+}
+
 /** Resolve required packaged elements while failing clearly on an invalid editor bundle. */
 function required<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
@@ -306,6 +313,7 @@ window.studyDesk = {
     notice.hidden = true;
     updateToolbar();
     measurePages();
+    resetDocumentScroll();
   },
   /** Refresh only packaged UI strings and accessibility names; the editor document is not rewritten. */
   setLanguage(selected: string, dictionary: Readonly<Record<string, string>>): void {
@@ -338,6 +346,7 @@ window.studyDesk = {
     notice.textContent = nativeColumns ? '' : translate('editor.layoutUnsupported');
     notice.hidden = nativeColumns;
     measurePages();
+    resetDocumentScroll();
   },
   snapshot,
   /** Insert only a bounded image selected and validated by the native file picker. */

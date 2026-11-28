@@ -1,8 +1,8 @@
 # StudyDesk project status / Stato del progetto
 
 Updated: 2026-11-28. Local verification complete on feat/offline-sync-foundation; consolidated dev
-review pending. No application release or VPS deployment. The existing Studiario service and
-unrelated projects remain untouched.
+review: [PR #4](https://github.com/sup3r93/StudyDesk/pull/4). No application release or VPS
+deployment. The existing Studiario service and unrelated projects remain untouched.
 
 ## English
 
@@ -14,7 +14,8 @@ unrelated projects remain untouched.
 - The coordinator independently ran 75 Release native-boundary/localization/binding tests, all
   passing. Real packaged Chromium tests verify readiness, oversized-message rejection before the
   subscriber, editor changes, durable autosave, native close, archive reopening, empty-state actions
-  and accessible item names.
+  and accessible item names. The long-to-short document scroll regression passes; snapshots and
+  language changes retain the reading position.
 - The actual UI was inspected in Italian and English at 1320 by 860, 1280 by 800 and 1024 by 768. A
   real keyboard edit survived language changes and reopening. Both language preferences survived
   separate process restarts without an environment override. User titles and text were unchanged.
@@ -95,10 +96,13 @@ required except explicitly enabled literal-loopback development connections.
 - All eight upstream notices match their source hashes in the final Release output. The optional
   Windows FXC DLL is not redistributed; Chromium runs using the verified OS module. A clean-machine
   installer/prerequisite walkthrough remains a later release gate.
-- Application CI is prepared locally with Linux server and Windows desktop jobs, including explicit
-  positive/negative packaged-editor executables. No application GitHub CI run is claimed.
-- Prepare one consolidated development pull request for the qualified block. No main merge,
-  installer or application release is implied by that review.
+- Application CI is configured for Linux server and Windows desktop, including explicit
+  positive/negative real-editor scenarios. Live remote results are recorded by
+  [PR #4 checks](https://github.com/sup3r93/StudyDesk/pull/4/checks); this report records local
+  validation. Both active branch rulesets now require all five jobs, verified after the GitHub
+  update.
+- The qualified block is consolidated in PR #4 toward dev. No main merge, installer or application
+  release is implied by that review.
 
 Later work includes functional Progress/Sources, attachments/media tabs, print settings, clinical
 scales, search, scoped sharing, CRDT collaboration, DOCX, Windows Hello, recovery/retention UI, a
@@ -140,9 +144,10 @@ quelle manuali mancanti.
 
 ### Stato della consegna
 
-Il blocco è qualificato localmente e viene preparato per una PR consolidata verso dev; la CI è
-predisposta ma non ancora verificata su GitHub. Nessun rilascio, migrazione, modifica VPS o
-rimozione di Studiario. Le chat lavorano su file distinti e Daybreak verifica la sicurezza prima
-delle correzioni. AI_RULES.md resta escluso da Git. Condivisione, collaborazione, allegati, scale
-cliniche, DOCX, Windows Hello, recupero/retention e installer appartengono alle fasi successive; il
-rapporto non li dichiara completati.
+Il blocco è qualificato localmente ed è nella PR #4 verso dev. Gli esiti remoti aggiornati sono nei
+controlli della PR; questo rapporto documenta il collaudo locale. I cinque job sono ora tutti
+obbligatori nelle regole attive di main e dev, verificate dopo l'aggiornamento. Nessun rilascio,
+migrazione, modifica VPS o rimozione di Studiario. Le chat lavorano su file distinti e Daybreak
+verifica la sicurezza prima delle correzioni. AI_RULES.md resta escluso da Git. Condivisione,
+collaborazione, allegati, scale cliniche, DOCX, Windows Hello, recupero/retention e installer
+appartengono alle fasi successive; il rapporto non li dichiara completati.

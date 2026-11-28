@@ -13,16 +13,22 @@ successful GitHub application build.
 `main` is the stable branch and `dev` is the integration branch. Short-lived branches normally merge
 into `dev`, followed by a release pull request into `main`.
 
-The [ruleset definitions](../.github/rulesets/) require pull requests, resolved conversations and
-these exact GitHub Actions check names: **Repository quality**, **Secret scan** and **Dependency
-review**. They block force pushes and branch deletion. No independent approval is required for the
+The [ruleset definitions](../.github/rulesets/) for both `main` and `dev` require pull requests,
+resolved conversations and all five exact GitHub Actions check names: **Repository quality**,
+**Secret scan**, **Dependency review**, **Server build and tests** and **Windows desktop build and
+tests**. Each required check is bound to the GitHub Actions integration ID `15368`.
+
+Both rulesets block force pushes and branch deletion. No independent approval is required for the
 single maintainer; additional reviewers can be required when independent maintainers join. `main`
 also requires an up-to-date pull request branch.
 
 The JSON definitions must be applied through GitHub settings or its API and inspected afterward.
-Application jobs are not automatically required merely because they appear in the workflow. Merge
-commits preserve `dev` ancestry during release promotion; mandatory commit signatures remain
-deferred until a signing workflow is deliberately configured.
+Both application jobs are explicitly required in each ruleset; their presence in the workflow alone
+would not make them mandatory. The candidate pull request must obtain successful results for all
+five checks before merging. Configuring these requirements does not establish that an application
+job has passed; results must be checked on the new run after any workflow correction. Merge commits
+preserve `dev` ancestry during release promotion; mandatory commit signatures remain deferred until
+a signing workflow is deliberately configured.
 
 ### Configured checks
 
@@ -99,16 +105,24 @@ dimostrano una compilazione riuscita dell’applicazione su GitHub.
 `main` è il branch stabile e `dev` quello di integrazione. I branch temporanei confluiscono
 normalmente in `dev`, seguito da una pull request di rilascio verso `main`.
 
-Le [definizioni dei ruleset](../.github/rulesets/) richiedono pull request, conversazioni risolte e
-questi nomi esatti dei controlli GitHub Actions: **Repository quality**, **Secret scan** e
-**Dependency review**. Bloccano force push ed eliminazione dei branch. Per l’unico manutentore non è
+Le [definizioni dei ruleset](../.github/rulesets/) per entrambi i branch `main` e `dev` richiedono
+pull request, conversazioni risolte e tutti e cinque i nomi esatti dei controlli GitHub Actions:
+**Repository quality**, **Secret scan**, **Dependency review**, **Server build and tests** e
+**Windows desktop build and tests**. Ogni check obbligatorio è associato all’integrazione GitHub
+Actions con ID `15368`.
+
+Entrambi i ruleset bloccano force push ed eliminazione dei branch. Per l’unico manutentore non è
 richiesta un’approvazione indipendente; sarà possibile richiederla quando contribuiranno altri
 manutentori. `main` richiede inoltre che il branch della pull request sia aggiornato.
 
 Le definizioni JSON devono essere applicate tramite impostazioni o API GitHub e controllate dopo
-l’applicazione. I job dell’applicazione non diventano obbligatori soltanto perché compaiono nel
-workflow. I merge commit conservano la continuità di `dev` durante il rilascio; le firme
-obbligatorie dei commit restano rinviate finché non viene configurato un flusso di firma.
+l’applicazione. Entrambi i job dell’applicazione sono esplicitamente obbligatori in ciascun ruleset;
+la loro sola presenza nel workflow non li renderebbe tali. Prima del merge, la pull request deve
+ottenere un risultato positivo per tutti e cinque i controlli. Configurare questi requisiti non
+dimostra che un job dell’applicazione sia riuscito: dopo una correzione del workflow occorre
+verificare la nuova esecuzione. I merge commit conservano la continuità di `dev` durante il
+rilascio; le firme obbligatorie dei commit restano rinviate finché non viene configurato un flusso
+di firma.
 
 ### Controlli configurati
 

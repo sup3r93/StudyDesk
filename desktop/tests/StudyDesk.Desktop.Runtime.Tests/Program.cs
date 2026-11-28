@@ -89,6 +89,7 @@ public static class Program
                 bool existingNotesPromptVerified = false;
                 bool emptyStatesVerified = false;
                 bool itemNamesVerified = false;
+                bool documentScrollVerified = false;
                 bool autosaveVerified = false;
                 bool reopenedVerified = false;
                 string stage = "readiness";
@@ -176,7 +177,8 @@ public static class Program
                         timeout.Token.ThrowIfCancellationRequested();
                         await Task.Delay(50, timeout.Token);
                     }
-                    await storage.SavePageAsync(pageId, spaceId, null, "Synthetic runtime note", "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}", timeout.Token);
+                    const string shortDocument = "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Synthetic short note remains visible.\"}]}]}";
+                    await storage.SavePageAsync(pageId, spaceId, null, "Synthetic runtime note", shortDocument, timeout.Token);
                     PageDto page = await storage.GetPageAsync(pageId, timeout.Token) ?? throw new InvalidOperationException("The synthetic note was not persisted.");
                     MethodInfo refreshExisting = typeof(MainWindow).GetMethod("ReloadPagesAsync", BindingFlags.NonPublic | BindingFlags.Instance)
                         ?? throw new InvalidOperationException("The native note refresh is unavailable.");
@@ -204,6 +206,8 @@ public static class Program
                         throw new InvalidOperationException("The native note name exposes metadata instead of its title.");
                     }
                     ChromiumWebBrowser browser = (ChromiumWebBrowser)window.FindName("EditorBrowser");
+                    stage = "document-navigation-scroll";
+                    documentScrollVerified = await VerifyDocumentScrollAsync(window, browser, storage, open, page, timeout.Token);
                     const string image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
                     JavascriptResponse edit = await browser.EvaluateScriptAsync("window.studyDesk.insertImage(" + JsonSerializer.Serialize(image) + ")").WaitAsync(TimeSpan.FromSeconds(5), timeout.Token);
                     if (!edit.Success)
@@ -230,7 +234,7 @@ public static class Program
                     await closed.Task.WaitAsync(TimeSpan.FromSeconds(5), timeout.Token);
                     using SqliteLocalWorkspaceStore reopened = new(settings.DataDirectory);
                     reopenedVerified = (await reopened.GetPageAsync(pageId, timeout.Token))?.ContentJson.Contains("data:image/png;base64,", StringComparison.Ordinal) == true;
-                    result = reopenedVerified && emptyStatesVerified && itemNamesVerified && oversizedRejectedBeforeSubscriber && existingNotesPromptVerified ? 0 : 1;
+                    result = reopenedVerified && emptyStatesVerified && itemNamesVerified && oversizedRejectedBeforeSubscriber && existingNotesPromptVerified && documentScrollVerified ? 0 : 1;
 
                     // Observes the real native close pipeline after its final durable save.
                     void OnClosed(object? eventSender, EventArgs eventArgs)
@@ -252,10 +256,14 @@ public static class Program
                         diagnostics = JsonSerializer.Deserialize<JsonElement>(await File.ReadAllTextAsync(path));
                     }
 
-                    Console.WriteLine(JsonSerializer.Serialize(new { appLocalFxcAbsent = true, expectedRegistrationFailure = rejectRegistration, injectedRegistrarCalls = Volatile.Read(ref injectedRegistrarCalls), injectedRegistrarReturnedFalse = Volatile.Read(ref injectedRegistrarReturnedFalse) == 1, registrationRejectionVerified, firstLaunchReady, oversizedRejectedBeforeSubscriber, existingNotesPromptVerified, emptyStatesVerified, itemNamesVerified, autosaveVerified, reopenedVerified, stage, failureType, diagnostics }));
+                    Console.WriteLine(JsonSerializer.Serialize(new { appLocalFxcAbsent = true, expectedRegistrationFailure = rejectRegistration, injectedRegistrarCalls = Volatile.Read(ref injectedRegistrarCalls), injectedRegistrarReturnedFalse = Volatile.Read(ref injectedRegistrarReturnedFalse) == 1, registrationRejectionVerified, firstLaunchReady, oversizedRejectedBeforeSubscriber, existingNotesPromptVerified, emptyStatesVerified, itemNamesVerified, documentScrollVerified, autosaveVerified, reopenedVerified, stage, failureType, diagnostics }));
                     if (window.IsVisible)
                     {
+                        TaskCompletionSource cleanupClosed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                        window.Closed += (_, _) => cleanupClosed.TrySetResult();
                         window.Close();
+                        // Keep the dispatcher alive for the native final-snapshot pipeline, including a failed regression.
+                        await cleanupClosed.Task.WaitAsync(TimeSpan.FromSeconds(5));
                     }
                     application.Shutdown(result);
                 }
@@ -285,6 +293,86 @@ public static class Program
         }
 
         return result;
+    }
+
+    /// <summary>Exercises real multi-sheet navigation and clear while preserving content and non-navigation scroll position.</summary>
+    private static async Task<bool> VerifyDocumentScrollAsync(MainWindow window, ChromiumWebBrowser browser,
+        SqliteLocalWorkspaceStore storage, MethodInfo open, PageDto shortPage, CancellationToken cancellationToken)
+    {
+        string paragraph = string.Join(' ', Enumerable.Repeat("Synthetic pagination content for the scroll regression.", 8));
+        string longDocument = JsonSerializer.Serialize(new
+        {
+            type = "doc",
+            content = Enumerable.Range(1, 45).Select(index => new
+            {
+                type = "paragraph",
+                content = new[] { new { type = "text", text = index.ToString(System.Globalization.CultureInfo.InvariantCulture) + ". " + paragraph } },
+            }),
+        });
+        Guid longPageId = Guid.NewGuid();
+        await storage.SavePageAsync(longPageId, shortPage.SpaceId, null, "Synthetic multi-sheet note", longDocument, cancellationToken);
+        PageDto longPage = await storage.GetPageAsync(longPageId, cancellationToken)
+            ?? throw new InvalidOperationException("The synthetic long note was not persisted.");
+        const string scrollLongNote = """
+            (() => {
+                const viewport = document.getElementById('paper-scroll');
+                if (document.getElementById('sheets').children.length < 3 || viewport.scrollHeight <= viewport.clientHeight) return false;
+                viewport.scrollTop = viewport.scrollHeight;
+                return viewport.scrollTop > 100;
+            })()
+            """;
+        const string shortNoteAtTop = """
+            (() => {
+                const viewport = document.getElementById('paper-scroll');
+                const paragraph = document.querySelector('.tiptap p');
+                const snapshot = JSON.parse(window.studyDesk.snapshot());
+                const top = paragraph.getBoundingClientRect().top;
+                const bounds = viewport.getBoundingClientRect();
+                return viewport.scrollTop === 0 && viewport.scrollLeft === 0 &&
+                    snapshot.content.content[0].content[0].text === 'Synthetic short note remains visible.' &&
+                    paragraph.textContent === 'Synthetic short note remains visible.' && top >= bounds.top && top < bounds.bottom;
+            })()
+            """;
+        await OpenAsync(longPage);
+        await RequireFlagAsync(scrollLongNote);
+        string language = JsonSerializer.Serialize(Localization.LocalizationService.Instance.CurrentLanguage);
+        string dictionary = JsonSerializer.Serialize(Localization.LocalizationService.Instance.Translations);
+        await RequireFlagAsync("(() => { window.studyDesk.snapshot(); window.studyDesk.setLanguage(" + language + ", " + dictionary + "); return document.getElementById('paper-scroll').scrollTop > 100; })()");
+        await OpenAsync(shortPage);
+        await RequireFlagAsync(shortNoteAtTop);
+        await OpenAsync(longPage);
+        await RequireFlagAsync(scrollLongNote);
+        await RequireFlagAsync("(() => { window.studyDesk.clear(); const viewport = document.getElementById('paper-scroll'); return viewport.scrollTop === 0 && viewport.scrollLeft === 0 && window.studyDesk.snapshot() === null; })()");
+        await OpenAsync(shortPage);
+        await RequireFlagAsync(shortNoteAtTop);
+        return true;
+
+        // Reuses the real native capture/save/load pipeline instead of bypassing the document bridge.
+        async Task OpenAsync(PageDto page)
+        {
+            await ((Task)(open.Invoke(window, [page, true]) ?? throw new InvalidOperationException("The synthetic note did not open.")))
+                .WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+        }
+
+        // Waits for Chromium's actual layout frames, with a bounded failure even when a viewport never resets.
+        async Task RequireFlagAsync(string script)
+        {
+            using CancellationTokenSource deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            deadline.CancelAfter(TimeSpan.FromSeconds(5));
+            while (true)
+            {
+                JavascriptResponse response = await browser.EvaluateScriptAsync(script).WaitAsync(TimeSpan.FromSeconds(5), deadline.Token);
+                if (!response.Success || response.Result is not bool flag)
+                {
+                    throw new InvalidOperationException("The synthetic document-scroll check could not run.");
+                }
+                if (flag)
+                {
+                    return;
+                }
+                await Task.Delay(50, deadline.Token);
+            }
+        }
     }
 
     /// <summary>Uses the production shared theme for the actual native controls without launching the application's normal entry point.</summary>
